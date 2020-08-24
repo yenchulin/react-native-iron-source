@@ -28,11 +28,12 @@ You can find available versions [here](https://github.com/wowmaking/react-native
 #### iOS
 Add `SKAdNetworkIdentifier` to your Info.plist
 ```xml
+<key>SKAdNetworkItems</key>
 <array>
-   <dict>
-       <key>SKAdNetworkIdentifier</key>
-       <string>SU67R6K2V3.skadnetwork</string>
-   </dict>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>SU67R6K2V3.skadnetwork</string>
+    </dict>
 </array>
 ```
  
