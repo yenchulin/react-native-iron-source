@@ -27,6 +27,8 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.ironsource.sdk:mediationsdk:6.+'
+    implementation 'com.ironsource.sdk:mediationsdk:7.+'
     implementation 'androidx.annotation:annotation:+'
+    implementation 'com.google.android.gms:play-services-ads-identifier:17.0.0'
+    implementation 'com.google.android.gms:play-services-basement:17.1.1'
 }

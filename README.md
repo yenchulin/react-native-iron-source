@@ -24,6 +24,17 @@ The fork includes following improvements:
 You can find available versions [here](https://github.com/wowmaking/react-native-iron-source/releases).
 
 ### RN >= 0.60
+
+#### iOS
+Add `SKAdNetworkIdentifier` to your Info.plist
+```xml
+<array>
+   <dict>
+       <key>SKAdNetworkIdentifier</key>
+       <string>SU67R6K2V3.skadnetwork</string>
+   </dict>
+</array>
+```
  
 #### Android
  Add a repo to your `android/app/build.gradle` file 
