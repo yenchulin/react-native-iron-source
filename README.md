@@ -17,6 +17,13 @@ The fork includes following improvements:
 * Working Example App
 * etc
 
+## Compatibility table
+
+| @wowmaking/react-native-iron-source | Xcode  | IronSourceSDK |
+| ----------------------------------- | ------ | ------------- |
+| 7.0.0                               | <= 11  | <= 7.0.1      |
+| \>= 7.0.3                           | \>= 12 | \>= 7.0.3     |
+
 ## Getting started
 
 `npm install @wowmaking/react-native-iron-source --save`
