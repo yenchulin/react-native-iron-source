@@ -68,14 +68,27 @@ RCT_EXPORT_METHOD(loadBanner:(NSString *)bannerSizeDescription
     if (self.bannerView) {
         [self destroyBanner];
     }
-    [IronSource loadBannerWithViewController:RCTPresentedViewController()
-                                        size:[[ISBannerSize alloc] initWithDescription:bannerSizeDescription]];
+    [IronSource loadBannerWithViewController:RCTPresentedViewController() size:[self getBannerSizeFromDescription:bannerSizeDescription]];
 
     [[NSNotificationCenter defaultCenter] removeObserver:self name:RCTBridgeWillReloadNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleRCTBridgeWillReloadNotification:)
                                                  name:RCTBridgeWillReloadNotification
                                                object:nil];
+}
+
+- (ISBannerSize *) getBannerSizeFromDescription:(NSString *)description
+{
+    if ([description isEqualToString:@"LARGE"]) {
+        return ISBannerSize_LARGE;
+    }
+    if ([description isEqualToString:@"RECTANGLE"]) {
+        return ISBannerSize_RECTANGLE;
+    }
+    if ([description isEqualToString:@"SMART"]) {
+        return ISBannerSize_SMART;
+    }
+    return ISBannerSize_BANNER;
 }
 
 RCT_EXPORT_METHOD(showBanner) {
@@ -161,14 +174,14 @@ RCT_EXPORT_METHOD(destroyBanner) {
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         UIViewController *viewController = RCTPresentedViewController();
-        
+
         self.bannerView = bannerView;
-        
+
         CGSize bannerSize = self->scaleToFitWidth ? [self getScaledBannerSize:bannerView] : [self getBannerSize:bannerView];
-        
+
         CGFloat bannerX = viewController.view.center.x;
         CGFloat bannerY = 0;
-        
+
         if ([self->position isEqualToString:@"bottom"]) {
             CGFloat bottomSafeAreaLength = [self getBottomSafeAreaLength];
             bannerY = viewController.view.frame.size.height - bannerSize.height / 2 - bottomSafeAreaLength;
@@ -176,7 +189,7 @@ RCT_EXPORT_METHOD(destroyBanner) {
             CGFloat topSafeAreaLength = [self getTopSafeAreaLength];
             bannerY = topSafeAreaLength + bannerSize.height / 2;
         }
-        
+
         self.bannerView.center = CGPointMake(bannerX, bannerY);
         if (self->scaleToFitWidth) {
             CGFloat bannerScale = [self getBannerScale:bannerView];
@@ -184,7 +197,7 @@ RCT_EXPORT_METHOD(destroyBanner) {
         }
         self.bannerView.hidden = YES;
         [viewController.view addSubview:self.bannerView];
-        
+
         self->resolveLoadBanner(@{
                                   @"width": [NSNumber numberWithFloat:bannerSize.width],
                                   @"height": [NSNumber numberWithFloat:bannerSize.height],
