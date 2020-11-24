@@ -51,4 +51,14 @@ public class RNIronSourceModule extends ReactContextBaseJavaModule {
     public void setConsent(boolean consent) {
         IronSource.setConsent(consent);
     }
+
+    @ReactMethod
+    public void getAdvertiserId(Promise promise) {
+      try {
+        promise.resolve(IronSource.getAdvertiserId(this.reactContext));
+      }
+      catch (Exception e) {
+        promise.resolve(null);
+      }
+    }
 }

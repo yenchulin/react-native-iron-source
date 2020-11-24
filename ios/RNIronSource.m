@@ -34,5 +34,15 @@ RCT_EXPORT_METHOD(setConsent:(BOOL)consent)
     [IronSource setConsent:consent];
 }
 
+RCT_EXPORT_METHOD(getAdvertiserId:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+    @try {
+        resolve([IronSource advertiserId]);
+    }
+    @catch (NSException *exception) {
+        resolve(nil);
+    }
+}
+
 @end
 
