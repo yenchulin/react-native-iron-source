@@ -25,7 +25,7 @@ export default class App extends Component {
     segment.setSegmentName('NAME');
     segment.activate();
 
-    IronSource.initializeIronSource('8a19a09d', 'demoapp', {
+    IronSource.initializeIronSource('df924479', 'Swipr - Meet Snapchat friends', {
       validateIntegration: false,
     }).then(() => {
       IronSourceRewardedVideo.addEventListener('ironSourceRewardedVideoAvailable', () => {
@@ -210,6 +210,7 @@ export default class App extends Component {
         <TouchableOpacity onPress={this.activateSegment}>
           <Text style={styles.button}>Activate Segment</Text>
         </TouchableOpacity>
+        <IronSourceBanner size={"LARGE"}/>
       </View>
     );
   }

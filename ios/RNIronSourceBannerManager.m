@@ -1,13 +1,7 @@
-//
-//  RNIronSourceBanner.m
-//  RNIronSource
-//
-//  Created by Kazlouski Dmitriy on 2/21/19.
-//
-
-#import "RNIronSourceBanner.h"
+#import "IronSource/IronSource.h"
+#import "React/RCTConvert.h"
 #import "RCTUtils.h"
-#import <React/RCTBridge.h>
+#import "RNIronSourceBannerManager.h"
 
 NSString *const kIronSourceBannerDidLoad = @"ironSourceBannerDidLoad";
 NSString *const kIronSourceBannerDidFailToLoadWithError = @"ironSourceBannerDidFailToLoadWithError";
@@ -16,7 +10,16 @@ NSString *const kIronSourceBannerWillLeaveApplication = @"ironSourceBannerWillLe
 NSString *const kIronSourceBannerWillPresentScreen = @"ironSourceBannerWillPresentScreen";
 NSString *const kIronSourceDidClickBanner = @"ironSourceDidClickBanner";
 
-@implementation RNIronSourceBanner
+@interface BannerComponent : UIView <ISBannerDelegate>
+
+@property ISBannerView *banner;
+@property(nonatomic, copy) ISBannerSize *size;
+
+@property(nonatomic, copy) RCTBubblingEventBlock onNativeEvent;
+
+@end
+
+@implementation BannerComponent
 {
     bool initialized;
     bool hasListeners;
@@ -26,12 +29,88 @@ NSString *const kIronSourceDidClickBanner = @"ironSourceDidClickBanner";
     NSString *position;
 }
 
-- (dispatch_queue_t)methodQueue
-{
-    return dispatch_get_main_queue();
+- (void)initBanner {
+    [IronSource setBannerDelegate:self];
+    [IronSource loadBannerWithViewController:RCTPresentedViewController() size:_size];
 }
 
-RCT_EXPORT_MODULE()
+
+- (void)setSize:(NSString *)size {
+    _size = [self getBannerSizeFromDescription:size];
+}
+
+
+- (void)bannerDidLoad:(ISBannerView *)bannerView {
+    
+    if (hasListeners) {
+        [self sendEvent:kIronSourceBannerDidLoad payload:nil];
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *viewController = RCTPresentedViewController();
+
+        self.banner = bannerView;
+
+        CGSize bannerSize = self->scaleToFitWidth ? [self getScaledBannerSize:bannerView] : [self getBannerSize:bannerView];
+
+        CGFloat bannerX = viewController.view.center.x;
+        CGFloat bannerY = 0;
+
+        if ([self->position isEqualToString:@"bottom"]) {
+            CGFloat bottomSafeAreaLength = [self getBottomSafeAreaLength];
+            bannerY = viewController.view.frame.size.height - bannerSize.height / 2 - bottomSafeAreaLength;
+        } else if ([self->position isEqualToString:@"top"]) {
+            CGFloat topSafeAreaLength = [self getTopSafeAreaLength];
+            bannerY = topSafeAreaLength + bannerSize.height / 2;
+        }
+
+        self.banner.center = CGPointMake(bannerX, bannerY);
+        if (self->scaleToFitWidth) {
+            CGFloat bannerScale = [self getBannerScale:bannerView];
+            self.banner.transform = CGAffineTransformMakeScale(bannerScale, bannerScale);
+        }
+        self.banner.hidden = YES;
+        [viewController.view addSubview:self.banner];
+
+        self->resolveLoadBanner(@{
+                                  @"width": [NSNumber numberWithFloat:bannerSize.width],
+                                  @"height": [NSNumber numberWithFloat:bannerSize.height],
+                                  });
+    });
+}
+
+- (void)bannerDidFailToLoadWithError:(NSError *)error {
+    if (hasListeners) {
+        [self sendEvent:kIronSourceBannerDidFailToLoadWithError payload:nil];
+    }
+    self->rejectLoadBanner(@"Error", @"Failed to load banner", error);
+}
+
+- (void)bannerDidDismissScreen {
+    if (hasListeners) {
+        [self sendEvent:kIronSourceBannerDidDismissScreen payload:nil];
+    }
+}
+
+
+- (void)bannerWillLeaveApplication {
+    if (hasListeners) {
+        [self sendEvent:kIronSourceBannerWillLeaveApplication payload:nil];
+    }
+}
+
+
+- (void)bannerWillPresentScreen {
+    if (hasListeners) {
+        [self sendEvent:kIronSourceBannerWillPresentScreen payload:nil];
+    }
+}
+
+
+- (void)didClickBanner {
+    if (hasListeners) {
+        [self sendEvent:kIronSourceDidClickBanner payload:nil];
+    }
+}
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[kIronSourceBannerDidLoad,
@@ -60,15 +139,14 @@ RCT_EXPORT_METHOD(loadBanner:(NSString *)bannerSizeDescription
                   options:(NSDictionary *)options
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejector:(RCTPromiseRejectBlock)reject) {
-    [self initializeBanner];
+    [self initBanner];
     scaleToFitWidth = [RCTConvert BOOL:options[@"scaleToFitWidth"]];
     position = [RCTConvert NSString:options[@"position"]];
     resolveLoadBanner = resolve;
     rejectLoadBanner = reject;
-    if (self.bannerView) {
+    if (self.banner) {
         [self destroyBanner];
     }
-    [IronSource loadBannerWithViewController:RCTPresentedViewController() size:[self getBannerSizeFromDescription:bannerSizeDescription]];
 
     [[NSNotificationCenter defaultCenter] removeObserver:self name:RCTBridgeWillReloadNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -92,25 +170,25 @@ RCT_EXPORT_METHOD(loadBanner:(NSString *)bannerSizeDescription
 }
 
 RCT_EXPORT_METHOD(showBanner) {
-    if (self.bannerView) {
+    if (self.banner) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.bannerView.hidden = NO;
+            self.banner.hidden = NO;
         });
     }
 }
 
 RCT_EXPORT_METHOD(hideBanner) {
-    if (self.bannerView) {
+    if (self.banner) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.bannerView.hidden = YES;
+            self.banner.hidden = YES;
         });
     }
 }
 
 - (void)destroyBannerInner {
-    if (self.bannerView) {
-        [IronSource destroyBanner:self.bannerView];
-        self.bannerView = nil;
+    if (self.banner) {
+        [IronSource destroyBanner:self.banner];
+        self.banner = nil;
     }
 }
 
@@ -118,12 +196,6 @@ RCT_EXPORT_METHOD(destroyBanner) {
     [self destroyBannerInner];
 }
 
-- (void)initializeBanner {
-    if (!initialized) {
-        [IronSource setBannerDelegate:self];
-        initialized = YES;
-    }
-}
 
 - (CGSize)getBannerSize:(ISBannerView *)bannerView {
     CGSize bannerSize = CGSizeMake(100, 100);
@@ -168,75 +240,51 @@ RCT_EXPORT_METHOD(destroyBanner) {
     return viewController.view.frame.size.width / bannerSize.width;
 }
 
-- (void)bannerDidLoad:(ISBannerView *)bannerView {
-    if (hasListeners) {
-        [self sendEventWithName:kIronSourceBannerDidLoad body:nil];
-    }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        UIViewController *viewController = RCTPresentedViewController();
+- (void)sendEvent:(NSString *)type payload:(NSDictionary *_Nullable)payload {
+  if (!self.onNativeEvent) {
+    return;
+  }
 
-        self.bannerView = bannerView;
+  NSMutableDictionary *event = [@{
+      @"type": type,
+  } mutableCopy];
 
-        CGSize bannerSize = self->scaleToFitWidth ? [self getScaledBannerSize:bannerView] : [self getBannerSize:bannerView];
+  if (payload != nil) {
+    [event addEntriesFromDictionary:payload];
+  }
 
-        CGFloat bannerX = viewController.view.center.x;
-        CGFloat bannerY = 0;
-
-        if ([self->position isEqualToString:@"bottom"]) {
-            CGFloat bottomSafeAreaLength = [self getBottomSafeAreaLength];
-            bannerY = viewController.view.frame.size.height - bannerSize.height / 2 - bottomSafeAreaLength;
-        } else if ([self->position isEqualToString:@"top"]) {
-            CGFloat topSafeAreaLength = [self getTopSafeAreaLength];
-            bannerY = topSafeAreaLength + bannerSize.height / 2;
-        }
-
-        self.bannerView.center = CGPointMake(bannerX, bannerY);
-        if (self->scaleToFitWidth) {
-            CGFloat bannerScale = [self getBannerScale:bannerView];
-            self.bannerView.transform = CGAffineTransformMakeScale(bannerScale, bannerScale);
-        }
-        self.bannerView.hidden = YES;
-        [viewController.view addSubview:self.bannerView];
-
-        self->resolveLoadBanner(@{
-                                  @"width": [NSNumber numberWithFloat:bannerSize.width],
-                                  @"height": [NSNumber numberWithFloat:bannerSize.height],
-                                  });
-    });
+  self.onNativeEvent(event);
 }
 
-- (void)bannerDidFailToLoadWithError:(NSError *)error {
-    if (hasListeners) {
-        [self sendEventWithName:kIronSourceBannerDidFailToLoadWithError body:nil];
-    }
-    self->rejectLoadBanner(@"Error", @"Failed to load banner", error);
+@end
+
+
+
+
+
+
+@implementation RNIronSourceBannerManager
+
+RCT_EXPORT_MODULE(RNIronSourceBanner)
+
+RCT_EXPORT_VIEW_PROPERTY(size, NSString);
+
+RCT_EXPORT_VIEW_PROPERTY(unitId, NSString);
+
+RCT_EXPORT_VIEW_PROPERTY(request, NSDictionary);
+
+RCT_EXPORT_VIEW_PROPERTY(onNativeEvent, RCTBubblingEventBlock);
+
+@synthesize bridge = _bridge;
+
+- (UIView *)view {
+    BannerComponent *banner = [BannerComponent new];
+    return banner;
 }
 
-- (void)bannerDidDismissScreen {
-    if (hasListeners) {
-        [self sendEventWithName:kIronSourceBannerDidDismissScreen body:nil];
-    }
-}
-
-
-- (void)bannerWillLeaveApplication {
-    if (hasListeners) {
-        [self sendEventWithName:kIronSourceBannerWillLeaveApplication body:nil];
-    }
-}
-
-
-- (void)bannerWillPresentScreen {
-    if (hasListeners) {
-        [self sendEventWithName:kIronSourceBannerWillPresentScreen body:nil];
-    }
-}
-
-
-- (void)didClickBanner {
-    if (hasListeners) {
-        [self sendEventWithName:kIronSourceDidClickBanner body:nil];
-    }
+- (dispatch_queue_t)methodQueue
+{
+    return dispatch_get_main_queue();
 }
 
 @end
