@@ -1,6 +1,7 @@
 import React from 'react';
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import { requireNativeComponent } from 'react-native';
+import { requireNativeComponent, ViewPropTypes } from 'react-native';
+import { func, string } from 'prop-types';
 
 // const RNIronSourceBanner = NativeModules.RNIronSourceBanner;
 // const IronSourceBannerEventEmitter = new NativeEventEmitter(RNIronSourceBanner);
@@ -46,9 +47,31 @@ class IronSourceBanner extends React.Component {
 //   eventHandlers[type].delete(handler);
 // };
 
-// const removeAllListeners = () => {
-//   supportedEvents.map((eventType) => IronSourceBannerEventEmitter.removeAllListeners(eventType));
-// };
+IronSourceBanner.propTypes = {
+  ...ViewPropTypes,
+
+  /**
+   * AdMob iOS library banner size constants
+   * (https://developers.google.com/admob/ios/banner)
+   * banner (320x50, Standard Banner for Phones and Tablets)
+   * largeBanner (320x100, Large Banner for Phones and Tablets)
+   * mediumRectangle (300x250, IAB Medium Rectangle for Phones and Tablets)
+   * fullBanner (468x60, IAB Full-Size Banner for Tablets)
+   * leaderboard (728x90, IAB Leaderboard for Tablets)
+   * smartBannerPortrait (Screen width x 32|50|90, Smart Banner for Phones and Tablets)
+   * smartBannerLandscape (Screen width x 32|50|90, Smart Banner for Phones and Tablets)
+   *
+   * banner is default
+   */
+  adSize: string,
+  // onSizeChange: func,
+  onAdLoaded: func,
+  onAdFailedToLoad: func,
+  onAdOpened: func,
+  onAdClosed: func,
+  onAdLeftApplication: func,
+  onAdClick: func,
+};
 
 // module.exports = {
 //   ...RNIronSourceBanner,
