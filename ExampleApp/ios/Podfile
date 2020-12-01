@@ -33,6 +33,7 @@ target 'ExampleApp' do
   end
 
   pod 'RNIronSource', :path => '../../RNIronSource.podspec'
+  pod 'IronSourceAdColonyAdapter','4.3.4.1'
 
   use_native_modules!
 end

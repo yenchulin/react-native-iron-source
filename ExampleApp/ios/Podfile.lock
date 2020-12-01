@@ -1,4 +1,5 @@
 PODS:
+  - AdColony (4.4.0)
   - boost-for-react-native (1.63.0)
   - DoubleConversion (1.1.6)
   - Folly (2018.10.22.00):
@@ -11,6 +12,9 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.5)
+  - IronSourceAdColonyAdapter (4.3.4.1):
+    - AdColony (= 4.4.0)
+    - IronSourceSDK (= 7.0.3.0)
   - IronSourceSDK (7.0.3.0)
   - React (0.60.5):
     - React-Core (= 0.60.5)
@@ -93,6 +97,7 @@ DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - Folly (from `../node_modules/react-native/third-party-podspecs/Folly.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
+  - IronSourceAdColonyAdapter (= 4.3.4.1)
   - React (from `../node_modules/react-native/`)
   - React-Core (from `../node_modules/react-native/React`)
   - React-cxxreact (from `../node_modules/react-native/ReactCommon/cxxreact`)
@@ -115,7 +120,9 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AdColony
     - boost-for-react-native
+    - IronSourceAdColonyAdapter
     - IronSourceSDK
 
 EXTERNAL SOURCES:
@@ -165,10 +172,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AdColony: 03c713bc6fedcaf3fc92f21f89276bc8a332e9c6
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
   Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
+  IronSourceAdColonyAdapter: 6ffe86ccbba96f527470ceaaade5044cdf568fe4
   IronSourceSDK: 9787d1c3e1d93a03d59edce53eb1f8063f5889b7
   React: 53c53c4d99097af47cf60594b8706b4e3321e722
   React-Core: ba421f6b4f4cbe2fb17c0b6fc675f87622e78a64
@@ -190,6 +199,6 @@ SPEC CHECKSUMS:
   RNIronSource: 6d4cd7a1c9e5dbba26e511bb573380482eede69d
   yoga: 312528f5bbbba37b4dcea5ef00e8b4033fdd9411
 
-PODFILE CHECKSUM: 0403bce3097e80c957ec70cd5a6967479db4516f
+PODFILE CHECKSUM: 76b8b4b375b8a4d0fdc26e2399d4d080b847f6e3
 
 COCOAPODS: 1.10.0

@@ -210,7 +210,9 @@ export default class App extends Component {
         <TouchableOpacity onPress={this.activateSegment}>
           <Text style={styles.button}>Activate Segment</Text>
         </TouchableOpacity>
-        <IronSourceBanner size={"LARGE"}/>
+        <View style={{ width: '100%', height: '50%', opacity: 1}}>
+          <IronSourceBanner adSize={"BANNER"} onAdLoaded={()=>console.log('hihihi')}/>
+        </View>
       </View>
     );
   }
